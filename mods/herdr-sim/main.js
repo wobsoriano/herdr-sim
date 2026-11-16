@@ -1,6 +1,6 @@
 import { View, div, image, svg } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { exec, theme, appHome, shared, setShared, nextCommand, props, layout } from "herdr";
+import { exec, theme, appHome, shared, setShared, nextCommand, props, layout, settings } from "herdr";
 import net from "net";
 import { writeFile } from "fs/promises";
 import { serveSim, startHelper, keyUsages, touchEdge } from "./serve-sim.js";
@@ -518,7 +518,12 @@ export default class Simulator extends View {
       .track_focus(this.focus)
       .on_key_down((e, cx) => this.keyDown(e, cx))
       .on_key_up((e, cx) => this.keyUp(e, cx))
-      .on_size_change((size, cx) => { this.size = size; cx.notify(); })
+      // Reported in window pixels; element sizes are scaled by zoom, so undo it.
+      .on_size_change((size, cx) => {
+        const zoom = settings().zoom || 1;
+        this.size = { width: size.width / zoom, height: size.height / zoom };
+        cx.notify();
+      })
       .child(this.selector(t))
       .child(this.toolbar(t))
       .child(v_flex().flex_1().items_center().justify_center()
